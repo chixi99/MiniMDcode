@@ -62,5 +62,5 @@ def run_md(atoms):
     dyn.run(200)
 
 if __name__ == "__main__":
-    atoms = readinputfile("Zn(AgO2)2_mvc-5892_computed.cif")
+    atoms = readinputfile("CuNi_mp-1225687_computed.cif")
     run_md(atoms)
