@@ -1,11 +1,14 @@
 """Demonstrates molecular dynamics with constant energy."""
-
+# Import Module
+import os
 from asap3 import Trajectory
 from ase.lattice.cubic import FaceCenteredCubic
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase.md.verlet import VelocityVerlet
 from ase import units
 from ase.io import read
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Use Asap for a huge performance increase if it is installed
 use_asap = True
@@ -46,8 +49,8 @@ def run_md(atoms):
     # We want to run MD with constant energy using the VelocityVerlet algorithm.
     dyn = VelocityVerlet(atoms, 5 * units.fs)  # 5 fs time step.
 
-    traj = Trajectory("CuNi_mp-1225687.traj", "w", atoms)
-    dyn.attach(traj.write, interval=10)
+    #traj = Trajectory("CuNi_mp-1225687.traj", "w", atoms)
+    #dyn.attach(traj.write, interval=10)
 
     def printenergy(a=atoms):  # store a reference to atoms in the definition.
         """Function to print the potential, kinetic and total energy."""
@@ -55,12 +58,36 @@ def run_md(atoms):
         print('Energy per atom: Epot = %.3feV  Ekin = %.3feV (T=%3.0fK)  '
               'Etot = %.3feV' % res)
 
-
     # Now run the dynamics
-    dyn.attach(printenergy, interval=10)
+    dyn.attach(printenergy, interval=100)
     printenergy()
+    res = calcenergy(atoms)
     dyn.run(200)
+    return res
 
 if __name__ == "__main__":
-    atoms = readinputfile("CuNi_mp-1225687_computed.cif")
-    run_md(atoms)
+    # Folder Path
+    path = "./test_samples"
+
+    # Change the directory
+    os.chdir(path)
+
+    # define the array to store the data
+    res_20 = []
+
+    # iterate through all file
+    for file in os.listdir():
+        # Check whether file is in cif format or not
+        if file.endswith(".cif"):
+            atoms = readinputfile(file)
+            res_20.append(run_md(atoms))
+
+    res_array = np.array(res_20)
+    #print(res_array[:, 1])
+    #scatter section
+    plt.scatter(res_array[:, 0], res_array[:, 1], alpha=0.5)
+
+    plt.ylabel('Kinetic_E')
+    plt.xlabel('Potential_E')
+
+    plt.show()
